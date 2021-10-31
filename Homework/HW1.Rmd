@@ -1,0 +1,75 @@
+---
+title: "Stochastic Processes Homework 1"
+author: "Due Date: October 3, 2020"
+date: "9/24/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*Instruction*: Please type or write your answers clearly and show your work. You are encouraged to use the Rmarkdown version of this assignment as a template to submit your work. Unless stated otherwise, all programming references in the assignment will be in `R`. For this assignment, problems roughly covers content from the first 3 lectures.
+
+
+
+
+*1.* Let $X,Y$ be discrete random variables, show that
+\[Var(X) = \mathbf{E}[Var(X|Y)] + Var(\mathbf{E}[X|Y])\]
+
+
+*2.* The time until a bus arrives has an exponential distribution with mean 30 minutes.
+
+  a) Use the command `rexp()` to simulate the probability that the bus arrives in the first 20 minutes.
+  b) Use the command `pexp()` to compare the exact probability.
+
+
+*3.* Let $X_0, X_1, \dots$ be a Markov chain with state space $\{1,2,3\}$ and transition matrix 
+
+
+
+\[
+  \begin{array}{c c } &
+  \begin{array}{c c c}\text{ 1 }  & \text{ 2 } & \text{  3 }  \\
+  \end{array}
+  \\
+  \begin{array}{c c c}
+  1 \\
+  2\\
+  3
+  \end{array}
+  &
+ \left[
+ \begin{array}{c c c}
+ 0 & 1/2 & 1/2 \\
+ 1 & 0 & 0 \\
+ 1/3 & 1/3 & 1/3
+ \end{array}
+ \right]
+\end{array}
+\]
+
+and initial distribution $\alpha = (1/2,0,1/2).$ Find the following:
+
+  a) $P(X_2 = 1| X_1 = 3)$
+
+  b) $P(X_1 =3|X_2 = 1)$ (hint: use the properties of conditional distribution)
+
+  c) $P(X_9 = 1| X_2 = 3, X_4 = 1, X_7 = 2)$
+
+*4.* Consider the Markov chain ${X_0,X_1,X_2...}$ with state space $\{A,B,C,D,E\}$ and transition matrix
+
+\[\begin{bmatrix} 0 &  0  &1/2 &1/2&0\\
+      0  & 2/3&  1/3&  0  &0  \\
+      1/5  & 1/5  & 1/5   &0   &2/5 \\
+      3/4   &0   &0   &0   &1/4 \\
+      1/2   &1/2   &0   &0   &0 \\
+ \end{bmatrix}\]
+     
+a) Construct a weighted directed graph of the Markov chain using the `markovchain` package.
+
+*5.* You start with five dice. Roll all the dice and put aside those dice that come up 6. Then, roll the remaining dice, putting aside those dice that come up 6. And so on. Let $X_n$ be the number of dice that are sixes after n rolls.
+
+a) Describe the transition matrix $\mathbf{P}$ for this Markov chain. (hint: first, define the state space $S$)
+b) Find the probability of getting all sixes by the third play.
+c) What do you expect $\mathbf{P}^{100}$ to look like? Use tetchnology to confirm your answer.

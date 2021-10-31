@@ -1,0 +1,78 @@
+---
+title: "Stochastic Processes"
+subtitle: "Supplemental code for lecture 4, U20 Math 585" 
+author: "Sami Cheong"
+date: "10/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(markovchain)
+library(diagram)
+library(randomcoloR)
+library(expm)
+```
+
+
+
+### Numerical investigation of long-term behavior of a Markov chain
+
+```{r}
+library(expm)
+
+#initial distribution (each choice is equally likely)
+# define a 1 x 4 row matrix for the initial distribution:
+alpha <- matrix(rep(0.25,1), nrow = 1, ncol = 4)
+# 1-step transition matrix
+# b = 1, f =2, p =3, s =4
+P <- matrix(rbind(c(0,0.5,0.5,0), 
+                  c(0.5,0,0.5,0),
+                  c(0.4,0,0,0.6),
+                  c(0,0.2,0.6,0.2)), nrow = 4,ncol = 4)
+
+# calculate 2-step and 3-step transition matrix:
+P2 <- P%^%2 # or P2 <- P%*%P)
+P3 <- P%^%3
+#P20 <- P%^%20
+
+# initial distribution * 3-step transition at sushi state * 2 step from sushi to sushi * 2 step from sushi to pizza
+p_ssp <- alpha%*%P3[,4]*P2[4,4]*P[4,3]
+
+
+row.names(P) <- c('Burrito','Falafel','Pizza','Sushi')
+plotmat(P,pos = c(2,2),
+        box.size = 0.1, 
+        box.type = "square", 
+        box.prop = 0.3,
+        box.col = c("light blue","light green","yellow","red"),
+        arr.length=.1,
+        arr.width=.1,
+        self.lwd = 2,
+        self.cex = 0.6,
+        self.shiftx = 0.12,
+        main = "Danny's lunch choices",
+        shadow.col = NULL,shadow.size = 0)
+
+
+
+alpha <- c(0.25,0.25,0.25,0.25)
+
+lunch_lt <- list()
+for (i in c(1,2,3,4,5,50,100,200,500,501)){
+  lunch_lt[[i]]<-alpha%*%(P%^%(i-1))
+}
+
+par(mfrow = c(2,5))
+colors = c(randomColor(hue = 'orange'),
+           randomColor(hue = 'orange'),
+           randomColor(hue = 'orange'),
+           randomColor(hue = 'orange'),
+           randomColor(hue = 'orange'),
+           'blue','blue','blue','blue','blue')
+k = 0
+for (i in c(1,2,3,4,5,50,100,200,500,501)){
+  k = k+1
+  barplot(lunch_lt[[i]], main = paste('P(X_n = i), n  = ', i-1),col = colors[k])
+}
+```

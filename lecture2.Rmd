@@ -1,0 +1,118 @@
+---
+title: "Stochastic Processes"
+subtitle: "Supplemental code for lecture 2, U20 Math 585" 
+author: "Sami Cheong"
+date: "9/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(markovchain)
+library(diagram)
+library(randomcoloR)
+
+```
+
+### Variance simulation of compound random variable:
+
+In the insurance company example, we are interested in learning the probability of a random variable that is consists of a two-stage components, i.e.
+
+\[X \sim Poisson(Y), \text{ and }Y \sim gamma(\lambda)\]
+
+From the exercise, we were able to derive that
+
+\[P(X=n)  = \frac{n+1}{2^n}\]
+
+How do we derive the variance in this case? 
+
+\[Var(X) = E(X^2) - (E(X))^2 =\sum_{k = 1}^{\infty} k^2 P(X=k) - (\sum_{k = 1}^{\infty} k P(X=k))^2  \]
+
+As we can see, this is not exactly the simplist calculation. However, we can also simulate the result numerically by making use of the random variable generation functions in R. In particular, the `rgamma()` and `rpois()` functions, which generate random variables with Gamma and Poision distribution respectively.
+
+```{r}
+
+# Parameter assumption of mean rate of accidents
+l <- seq(0.1,1000,0.1)
+
+gamma_func <- l*exp(-l)
+
+plot(l,gamma_func,type = 'l',lwd = 3, col = 'blue', main = 'distribution of lambda' )
+
+
+Y <- sample(x=l,size=1,prob=gamma_func)
+
+print(Y)
+# number of accidents for each policy holder based on the assumptions above
+X <-rpois(n = 1,lambda = Y)
+
+n_insurance = 100
+
+X_list <-rpois(n_insurance ,Y)
+
+hist(X_list , 
+     main = paste("Distribution of total # of accidents per policy holder with lambda =",lambda),col= randomColor())
+
+head(X_list)
+```
+
+
+From the distribution above we can calculate the following:
+
+- what is the probability that $X = k$?
+- what is the mean and variance of the accident rates?
+
+
+
+
+```{r}
+
+# put this together as a function
+simulate_lambda<-function(){
+        
+        l <- seq(0.01,5000,0.1)
+
+        gamma_func <- l*exp(-l)
+
+
+        Y <- sample(x=l,size=1,prob=gamma_func)
+
+
+        X <-rpois(1,Y)
+        
+        
+        return(X)
+   
+        
+}
+
+n_trials = 100
+
+X_list <- replicate(n_trials,simulate_lambda())
+
+
+k <- 5
+
+mean_simulate <- mean(X_list)
+
+var_simulate <- var(X_list)
+
+p_simulate <- sum(X_list==k)/n_trials
+
+
+p_theoretical <- (k+1)/(2^(k+1))
+
+print(p_theoretical)
+
+print(paste('simulated mean: ', mean_simulate))
+
+print(paste('simulated var: ', var_simulate))
+
+print(paste('simulated probability: ', p_simulate))
+
+print(paste('theoretical probability: ', p_theoretical))
+```
+
+
+
+

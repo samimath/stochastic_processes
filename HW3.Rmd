@@ -1,0 +1,80 @@
+---
+title: "Stochastic Processes Homework 3"
+author: 'Due Date: November 21, 2020'
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(kableExtra)
+```
+
+*Instruction*: Please type or write your answers clearly and show your work. You are encouraged to use the Rmarkdown version of this assignment as a template to submit your work. Unless stated otherwise, all programming references in the assignment will be in `R`. For this assignment, problems roughly covers content from the lectures 6 - 8.
+
+
+
+
+*1.* Simulate a realization of a Poisson process, ${N_t, t\leq 0}$, in R using the following method:
+
+1. Let initial arrival time $S_0 = 0$
+2. Generate i.i.d. exponential random variables $X_1,X_2,...$
+3. Let $S_n = X_1 + ...+X_n$, for $n=1,2,3,...$
+4. For each $k = 0,1,2,...,$ let $N_t = k$ for $S_k \leq t < S_{k+1}$
+
+Provide your code and plot the simulation with $\lambda = 0.5$ on the interval $[0,50].$
+
+
+*2.* Starting at 9 a.m., patients arrive at a doctor's office according to a Poisson process. On average, three patients arrive every hour.
+
+a) Find the probability that at least two patients arrive by 9:30 a.m.
+b) Find the probability that 10 patients arrive by noon and eight of them come to the office before 11 a.m.
+
+*3.* See the definition for the spatial and nonhomogeneous Poisson processes. Define a nonhomogeneous, spatial Poisson process in $R^2.$ Consider such a process $(N_A,A\subset R^2)$ with intensity function $\lambda(x,y) = e^{-(x^2+y^2)}, -\infty < x,y < \infty$.
+
+Let C denote the unit circle, that is, the circle of radius 1 centered at the origin. Find $P(N_C = 0)$. (Hint: the rate would require you to integrate $\lambda(x,y)$ over a unit circle, which can be evaluated using polar coordinate transformation)
+
+
+
+*4.* Starting at 9 a.m., customers arrive at a store according to a nonhomogeneous Poisson process with intensity function $\lambda(t) = t^2, t>0,$ where the time unit is hours. Find the probability mass function of the number of customers who enter the store by noon. 
+
+
+*5* Consider the following implementation of simulating spatial Poisson processes. 
+
+```{r}
+
+# spatialPoisson.R
+# Spatial Poisson process
+
+lambda <- 100
+squarearea <- 1
+trials <- 10000
+simlist <- numeric(trials)
+for (i in 1:trials) {
+  # simulate number of points in the area
+	N <- rpois(1, lambda*squarearea)
+	# assign uniformly distributed coordinates to each point
+	xpoints <- runif(N,0,1)
+	
+	ypoints <- runif(N,0,1)
+	# count number of points within centered at (0.7,0.7) with a radius of 0.2
+	ct <- sum(((xpoints-0.7)^2 + (ypoints-0.7)^2) <= 0.2^2)
+	# collect number of points in circle in a vector
+	simlist[i] <- ct 
+}
+# mean and variance from the simulation
+#mean(simlist)
+#var(simlist)
+# Compare to theoretical mean 
+#lambda*pi*(0.2)^2
+
+```
+
+
+a) Modify it to simulate a spatial Poisson process in $R^3$, with $\lambda = 10$ and on the box of volume 8 with vertices at the 8 points $(\pm1,\pm1,\pm1).$ 
+b) Estimate the mean and variance of the number of points in the sphere centered at the origin of radius 1. 
+b) Compare the simulated count with the theoretical value
+
+
+
+

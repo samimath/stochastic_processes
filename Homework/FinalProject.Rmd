@@ -1,0 +1,67 @@
+---
+title: "Stochastic Processes Final Project"
+author: "U20 Math 585, Fall 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Objective 
+
+Throughout this class, we have learned many concepts and examples in stochastic processes. While the homework assignments focus mainly on the mathematical understanding and computational practice from our lectures, the final project is a chance for you to explore the applications of stochastic processes deeper, and in a topic you enjoy. For the final project, you can choose one from the following options:
+
+1. **Literature review:** Identify a peer-reviewed journal article that models real-life problems in your area of interest. The modeling approach can be a stochastic model that we have not covered in class, as long as you can give a introductory summary on it.
+
+2. **Original application:** Identify a problem you're trying to solve, and model it using a stochastic process approach that you've learned in class, or one that you've learned from literature research.
+
+3. **Board game creation:** Design your own board game which can be modeled as a Markov chain. Describe the rules of the game. Ask interesting questions and answer them by simulation and/or an exact analysis.
+
+## Detailed guideline:
+
+In each of the options, please address the following points:
+
+- Overall objective : What is the problem you/the authors are trying to study? What is the motivation and significance behind it?
+
+- Problem formulation : Describe the mathematical model that you/authors propose. What is the structure of the model? What are the variables? How are the variables estimated from the data (if applicable)?
+
+- Application approach: Describe or recreate the numerical examples studied in the problem. What are some simulations that were done to compare the solution quality, or expected behavior of the model?
+
+- Conclusion : Provide a detailed summary of your take-away of the project. For example, provide an analysis of the model in terms of advantage/disadvantage of the approach, limitations and opportunities, and further examples to model similar problems. 
+
+- References: Citation of references and data sources (if applied) 
+
+If you have an idea that doesn't quite fit the above options, please reach out to me as soon as you can, and we can discuss it.
+
+## Format
+
+The project will be divided into 3 parts:
+
+1. Outline (5pt): Please describe the problem of your choice and an initial outline of the steps you plan on taking to complete the project.
+
+2. Presentation (10 pt): Please prepare a presentation that describes your project (such as motivation of the problem, modeling approach, conclusion and take-away), in language that is understandable for your fellow classmates. The presentation time-limit is 12 minutes.
+
+3. Write-up (20 pt): Please prepare a detailed write-up (5-8 pages) of your project that addresses the points listed under the `Detailed guideline` section.
+
+Please submit all portions of your project on Canvas. Links will be available before due dates.
+
+## Timeline 
+
+The following are the key due dates for the project:
+
+- **12/2/2020** : Outline of final project
+
+- **12/16/2020**: In-class presentation
+
+- **12/20/2020** : Detailed write-up 
+
+## References 
+
+Please take a look at the [*list of links*](https://wustl.instructure.com/courses/53885/pages/some-useful-links-updated-occasionally?module_item_id=501231) on our Canvas site for inspiration. In general, a goggle search will give you plenty of good ideas to start with.
+
+## Writing and communication guidelines
+
+Please keep your project write-up as concise as you can. Please write your paper in the style of a professional report, which means it is important to check the flow of your work to make sure it is coherent, include any exhibitions to facilitate your ideas, and cite all sources properly. For styling, you are highly encouraged to use LaTeX or Rmarkdown to type up the project, but Word is acceptable as well. In terms of presentation, the idea is to present your work in a way that is short enough to get to the point, but long enough that will cover the topic, so it is important to budget your time for the slides, and practice your talk if possible. Here is [*a link*](https://people.inf.ethz.ch/markusp/teaching/guides/guide-presentations.pdf) that provides helpful tips and tricks on how to give a technical presentation:
+
+

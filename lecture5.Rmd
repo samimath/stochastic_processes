@@ -1,0 +1,101 @@
+---
+title: "Stochastic Processes"
+author: "Sami Cheong"
+date: "10/12/2020"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(markovchain)
+library(diagram)
+library(randomcoloR)
+
+```
+
+### Random walk simulation with different values of $p$
+
+```{r random_walk}
+X_k <- function(p) {
+  # function to generate a random step:
+  return(sample(c(-1,1),1,prob=c(1-p,p)))
+  
+}   
+
+random_path <- function(p,k,n){
+  # function to simulate a path:
+  
+  X <- replicate(n, X_k(p))
+  
+  return(cumsum(X)+k)
+  
+  
+}
+
+n<-100
+time <-seq(1,n,1)
+p1 <-0.65
+p2 <- 0.35
+p3 = 0.5
+plot(time,random_path(p1,0,n),
+     type = 'l', 
+     col ='blue',
+     lwd = 2,
+     ylim = c(-50,50),
+     ylab="X(t)",
+     xlab = "t")
+abline(a=0,b=0,lwd = 1)
+lines(time,random_path(p2,0,n),col='red',lwd = 2)
+lines(time,random_path(p3,0,n),col='forestgreen',lwd = 2)
+legend(0,40,c(paste('with p = ', p1), 
+              paste('p = ', p2),
+              paste('p = ', p3)),
+       col=c("blue", "red","forestgreen"),
+       lty=c(1,1,1), cex=0.8,
+       title = "Simple random walk")
+
+```
+
+
+### Dice-rolling game 
+
+You start with five dice. Roll all the dice and put aside those dice that come up 6. Then, roll the remaining dice, putting aside those dice that come up 6. And so on. Let $X_n$ be the number of dice that are sixes after n rolls.
+
+
+```{r}
+
+p_multinom <-function(n,x,p){
+  return(choose(n,x)*(p^x)*(1-p)^(n-x))
+}
+pdice <-matrix(rep(0,36),ncol = 6,nrow = 6)
+
+for (i in 1:6){
+    n <- 6-i
+    print(i)
+    row_i <-c(rep(0,i-1),unlist(lapply(0:n,function(x){p_multinom(n,x,1/6)})))
+    pdice[i,]<-row_i
+}
+
+
+row.names(pdice) <- 1:6
+as(pdice, "markovchain")
+plotmat(pdice,
+        box.size = 0.08, 
+        box.type = "square", 
+        box.prop = 0.2,
+        box.col = c("light blue","light green","yellow","red","magenta","forestgreen"),
+        arr.length=.1,
+        arr.width=.1,
+        self.lwd = 2,
+        self.cex = 0.3,
+        self.shiftx = 0.1,
+        main = "Dice rolling game",
+        shadow.col = NULL,shadow.size = 0)
+
+Q_dice <-pdice[1:5,1:5]
+R_dice <-pdice[1:5,6]
+F_mat <-solve(diag(5)-Q_dice)
+Absorb <-F_mat%*% rep(1,5)
+Absorb
+
+```
+

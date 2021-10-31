@@ -1,0 +1,125 @@
+---
+title: "Stochastic Processes"
+author: "Sami Cheong"
+date: "10/21/2020"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(markovchain)
+library(diagram)
+library(randomcoloR)
+
+```
+
+### Simulation of branching process
+
+```{r branching}
+
+branch_geom <- function(n,p) {
+z <- c(1,rep(0,n))
+for (i in 2:(n+1)) {
+		z[i] <- sum(rgeom(z[i-1],p))
+		}
+		return(z) }
+
+branch_custom <- function(n,alpha) {
+	z <- c(1,rep(0,n))
+	s <-length(alpha)-1
+	for (i in 2:(n+1)) {
+			z[i] <- sum( sample(0:s, z[i-1], replace=T, prob=alpha))
+			}
+			return(z) }
+
+branch_poisson <- function(n,lam) {  
+	z <- c(1,rep(0,n))
+	for (i in 2:(n+1)) {
+			z[i] <- sum(rpois(z[i-1],lam))
+			}
+			return(z)
+}
+
+
+## Simulating brancing process with geometric distribution
+
+trials <- 1000
+
+simlist <-replicate(trials, branch_geom(10,1/4)[11])
+
+```
+
+
+### Simulation of Normal random variable using MCMC (Metropolis-Hastings approach)
+
+
+```{r}
+
+trials <- 10000
+
+MH_normal <-function(trials,stepsize,mu,s){
+  
+  simlist <- numeric(trials)
+
+  state <-mu
+  
+  for (i in 2:trials){
+    # proposal function: transition probability is 1/2s
+    prop <- runif(1, state-stepsize,state+stepsize)
+    
+    # set numerator of acceptance function (evaluated at current state
+    pi_j <-dnorm(prop,mu,s)
+    
+    # set denominator of acceptance function (evaluated at proposed state)
+    pi_i <-dnorm(state,mu,s)
+    
+    #acceptance function: 
+    acc <- (pi_j/pi_i)
+    
+    # rejection/acceptance rule:
+    if (runif(1) < acc){
+      
+      state <- prop
+      
+    }
+    
+    # collect results:
+    simlist[i] <- state
+    
+  }
+
+  return(simlist)
+}
+
+
+mh_101 <- MH_normal(trials,1,0,1)
+
+mh_201 <- MH_normal(trials,2,0,1)
+
+mh_151 <- MH_normal(trials,1,5,1)
+
+mh_251 <- MH_normal(trials,2,5,1)
+
+```
+
+
+Plotting the simulation results:
+
+```{r}
+
+par(mfrow = c(2,2))
+
+hist(mh_101 ,xlab="",main="mean = 0, sd = 1, step-size = 1",prob=T,col = randomColor(),xlim = c(-8,8),ylim = c(0,0.4))
+curve(dnorm(x,mean = 0,sd = 1),-20,20,add=T,n = trials)
+
+hist(mh_201  ,xlab="",main="mean = 0, sd = 1, step-size = 2",prob=T,col = randomColor(),xlim = c(-8,8),ylim = c(0,0.4))
+curve(dnorm(x,mean = 0,sd = 1),-20,20,add=T,n = trials)
+
+
+hist(mh_151 ,xlab="",main="mean = 5, sd = 1, step-size = 1",prob=T,col = randomColor(),xlim = c(-8,8),ylim = c(0,0.4))
+curve(dnorm(x,mean = 5,sd = 1),-20,20,add=T,n = trials)
+
+hist(mh_251 ,xlab="",main="mean = 5, sd = 1, step-size = 2",prob=T,col = randomColor(),xlim = c(-8,8),ylim = c(0,0.4))
+curve(dnorm(x,mean = 5,sd = 1),-20,20,add=T,n = trials)
+
+```
+

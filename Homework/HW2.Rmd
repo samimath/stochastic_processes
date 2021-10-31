@@ -1,0 +1,61 @@
+---
+title: "Stochastic Processes Homework 2"
+author: "Due Date: October 24, 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(kableExtra)
+```
+
+*Instruction*: Please type or write your answers clearly and show your work. You are encouraged to use the Rmarkdown version of this assignment as a template to submit your work. Unless stated otherwise, all programming references in the assignment will be in `R`. For this assignment, problems roughly covers content from the lectures 4 - 5.
+
+
+
+
+*1.* A stochastic matrix is called _doubly stochastic_ if its rows and columns sum to 1. Show that a Markov chain whose transition matrix is doubly stochastic has a stationary distribution, which is uniform on the state space. 
+
+
+*2.* Consider a Markov chain with transition matrix 
+
+
+\[\begin{bmatrix} 1-a&  a  &0 \\
+      0  & 1-b&  b  \\
+      c & 0 & 1-c
+ \end{bmatrix}\]
+ 
+ where $0<a,b,c<1$. Find the stationary distribution.
+
+*3.* Let $\mathbf{P}$ be a stochastic matrix.
+
+a) If $\mathbf{P}$ is regular, is $\mathbf{P}^2$ regular?
+b) If $\mathbf{P}$ is the transition matrix of an irreducible Markov chain, is $\mathbf{P}^2$ the transition matrix of an irreducible Markov chain?
+
+
+*4.* The California Air resources Board warns the public when smog levels are above certain thresholds. Days when the board issues warnings are called _episode days_. A model (Lin, 1981) of the daily sequence of episode and nonepisode days is presented below as a Markov chain with transition matrix
+
+```{r,echo=FALSE,fig.align='center'}
+
+M <-as.data.frame(matrix(cbind(c(0.77,0.24),c(0.23,0.76)),ncol = 2,nrow = 2))
+row.names(M)<-c('nonepisode', 'episode')
+colnames(M)<-c('nonepisode', 'episode')
+kable(M,format='latex')%>%kable_styling(position = "center")
+```
+Use `R` to answer the following:
+
+a) What is the long-term probability that a given day will be an episode day?
+b) Over a year's time about how many days are expected to be episode days?
+c) In th long-term, what is the average number of days that will transpire between episode days?
+ 
+*5.* Consider a Markov chain with transition matrix 
+
+\[\mathbf{P} = \begin{bmatrix} 1/2&  1/2 \\
+      0  & 1
+ \end{bmatrix}\]
+ 
+Obtain a closed form expression for $\mathbf{P}^n.$ Exhibit the matrix $\sum_{n=0}^{\infty}\mathbf{P}^n$ (some entries may be $+\infty$). Explain what this shows about the recurrence and transience of the states.
+
+ 
+
+

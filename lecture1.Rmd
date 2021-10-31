@@ -1,0 +1,316 @@
+---
+title: "Stochastic Process"
+subtitle: "Supplemental notes for lecture 1, U20 Math 585" 
+author: "Sami Cheong"
+date: "9/8/2020"
+output: html_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(randomcoloR)
+```
+
+## Comparing between deterministic and stochastic modeling - simple growth modeling 
+
+Consider the modeling of the size of a population at time $t$, let's call this quantity $x(t),$ and suppose we have the following assumptions:
+
+- there are no deaths in the population
+- there are no interactions between individuals
+- each individual has the same birth rate $b$
+- at time $t = 0,$ the population is $a > 0$
+
+### Deterministic formulation:
+
+We can model $x(t)$ by modeling it's rate of change, as a function of itself:
+
+$\frac{dx}{dt} = bx,x_0 = x(0) = a$ 
+
+$\int dx(t) = \int bx(t) dt$
+
+The only function that satisfy the above relation is if $x(t) = e^{bt}.$ Therefore:
+
+$x = a e^{bt},$ where $a > 0 $ = initial population, $x(0)$, and $b > 0$ = birth rate
+
+Below is a visualization of the population over time with some assumption for $a$ and $b$: 
+
+```{r det_model}
+
+t  = seq(from = 0, to = 7,by = 0.11)
+a = 1
+b = 1
+x =  a*exp(b*t)
+plot(t,x,type = 'l', col = 'blue',lwd = 2,
+     main = paste('Exponential Growth (Deterministic) with a =', a, 'b =', b ),
+     xlab = 'Time',
+     ylab = 'Population')
+```
+
+
+### Stochastic formulation:
+
+In the stochastic case, we are interested in the _*Probability*_ that our population at time $t$ is at a some quantity. Mathematically, that is defined as \[p_n(t) = \mathbb{P}(x(t)=n).\] 
+
+THis means that, instead of modeling $\frac{dx}{dt}$, the rate of change of the population, we model the rate of change of the probability, $\frac{dp_n(t)}{dt},$ and our goal here is to solve for $p_n(t)$.
+
+One approach is the assumption that the population equations $n$ at time $t + \Delta t$ is a one of these two events:
+
+- at time $t$ the population size was $n - 1$ and there was a birth
+- at time $t$ the population size was $n$ and there was no birth
+
+which can be formulated as :
+
+
+\[
+p_n(t+\Delta t) = \underbrace{p_{n-1}(t)}_{\text{prob. that size} = n-1}\overbrace{b(n-1)\Delta t}^{\text{new birth}} + \underbrace{p_n(t)}_{\text{prob. that size = n}}\overbrace{(1 - b n \Delta t)}^{\text{ no new birth}}
+\]
+
+subtracting $p_n(t)$ from both side,  divide by $\Delta t$ and letting $\Delta t \to 0,$ we get the following differential equation:
+
+
+\[
+\frac{p_n(t)}{dt} = b(n-1)p_{n-1}(t) - bnp_n(t)
+\]
+
+where $n = 1, 2, \dots$. It turns out, at each fixed time $t$, $p_n(t)$ follows the negative binomial distribution with the following parameters:
+
+
+\[
+p_n(t) = {n-1 \choose {a-1}} e^{-abt} (1=e^{-bt})^{n-a}, n = a, a+1, a+2, \dots\]
+
+
+
+Now, to simulate a sample path based on the above assumption, we need to know the distribution of the time between successive birth events, or its _interenvet_ time. It turns out in the case of a simple birth process (Stochastic counterpart of exponential growht model), the interevent time is _exponentially distributed_ with rate $bn.$ In other words, if $T$ represents the time it takes to go from one birth event to next, then $T$ is a random variable with a distribution that satisfies:\[\mathbb{P}(T>t) = \exp(-bnt), t > 0\]
+
+
+```{r stoch_mode}
+
+
+stoch_time <- function(n, b){
+  st <- rep(0,length(n))
+  
+  for (i in 1: (length(n)-1)){
+    
+    st[i+1] <- st[i] - log(runif(1))/(b*n[i])
+  }
+  return(st)
+}
+
+
+# simulation sample paths:
+t <- seq(0,7,0.1)
+a <-1
+b <- 1
+
+# generate a number of realizations:
+n_try <- 10
+n_max <- max(ceiling(exp(b*t)))
+
+plot(t,exp(b*t),type = 'l', col = 'blue',lwd = 3,
+     main = paste('Exponential Growth + ' ,n_try, ' Stochastic simulation paths , a =', a, 'b =', b ,'\n'),
+     xlab = 'Time',
+     ylab = 'Population')
+
+
+for (i in 1:n_try){
+
+  lines(stoch_time(n = seq(a,n_max,1),1),seq(a,n_max,1), col = randomColor(hue = 'green'), lwd = 1.5)
+}
+
+
+
+```
+
+
+
+
+### Example 2: Random Walk
+
+- Suppose you have some change (`$k`) and you’d like to see if you could get to `$n` by betting with a friend on a coin toss.
+
+- Each time you flip a coin dictates whether or not you’re gain $1, or lose $1.
+ 
+Let $X_i, i = 1,2, 3,...$ be such an event. Note that $\{𝑋_𝑖\}_{i=1}^\infty$  is a sequence of i.i.d. random variables and 
+
+- $𝑋_𝑖= +1$  with probability p
+- $𝑋_𝑖=−1$  with probability q = 1-p
+
+Now suppose $𝑆_𝑛=𝑋_1+𝑋_2+⋯+𝑋_𝑛$ is the amount of dollars you have left after n turns. You will not stop until you either get $n or lost all your change.
+
+*What is $\mathbb{P}(S_n = 0)$?*
+
+
+Let's define some functions to help us find the answer by simulation.
+
+```{r gamble}
+
+
+X_k <- function(p) {
+  # function to generate a random step:
+  return(sample(c(-1,1),1,prob=c(1-p,p)))
+  
+}   
+
+random_path <- function(p,k,n){
+  # function to simulate a path:
+  
+  X <- replicate(n, X_k(p))
+  
+  return(cumsum(X)+k)
+  
+  
+}
+
+random_path(0.5,0,10)
+
+
+#S_n == X_1 + X_2 + X_3 + ...+ X_n given I have a budget of k and a goal of $n
+
+gamble <- function(k,n,p) {
+  # function to simulate a gambling game 
+  # for a given budget, desired $ and prob of +1 at each step
+  stake <- k
+  
+  while (stake > 0 & stake < n) {
+  
+    bet <- sample(c(-1,1),1,prob=c(1-p,p))
+    
+    stake <- stake + bet
+  }
+  if (stake == 0) return(1) else return(0)
+}   
+
+```
+
+
+Now let's give this a try. Suppose we have a budget of k = $10, and we'd like to play this game 40 times (or until we lost all fortune, or until we got \$40, whichever comes first).
+
+Let's simulate this game 1000 times (i.e. assume we're robots that never gets tired of flipping coins, or losing money)
+
+```{r}
+
+# simulate probability of P(Sn = 0)
+k <- 0
+n <-  100
+p <- 0.5  
+trials <- 1
+simlist <- replicate(trials, gamble(k, n, p))
+# Estimate of probability that gambler is ruined
+# For p = 0.5, exact probability is (n-k)/n
+mean(simlist) 
+
+# simulate sample paths of random walks after n steps:
+random_paths <- list()
+max_vals <- NULL
+min_vals <- NULL
+for (i in 1:n){
+  random_paths[[i]] <- random_path(p,k,n)
+  max_vals <- c(max_vals,max(random_paths[[i]]))
+  min_vals <- c(min_vals,min(random_paths[[i]]))
+}
+
+max_val <- max(max_vals)
+min_val <- min(min_vals)
+ymin = min(-10, min_val - 2)
+ymax = max(n, max_val + 2)
+xlab = 'steps'
+ylab = 'sample path (S_n)'
+
+plot(seq(1,n,1), rep(k,n),xlim = c(0,n), ylim = c(ymin,ymax), type ='l',lwd =2, xlab= xlab, ylab = ylab)
+#lines(seq(1,n,1), rep(0,n),xlim = c(0,n), ylim = c(ymin,ymax),  col='red',lwd =3, xlab= xlab, ylab = ylab)
+#lines(seq(1,n,1), rep(n,n),xlim = c(0,n),ylim = c(ymin,ymax),  col='forestgreen', lwd = 3, xlab= xlab, ylab = ylab)
+
+for (i in 1:trials){
+  lines(seq(1,n,1), random_paths[[i]], col = randomColor(hue = 'purple'),lwd =2)
+  
+}
+
+```
+
+
+
+Let's try to simulate $S_n$ as a function of n:
+
+```{r Sn}
+
+
+# simulate gambler's sum as a function of n:
+n_list <- seq(k+10, k+ 1000,2)
+par(mfrow = c(1,3))
+p<- 0.3
+Sn <- unlist(lapply(n_list, function(n){random_path(p,k,n)[n]}))
+plot(n_list,Sn,type ='l', col = 'blue',lty =5, main = 'p = 0.3')
+lines(n_list, rep(0,length(n_list)),col = 'red',)
+lines(n_list, rep(n,length(n_list)),col = 'green', ylim = c(-100,100))
+
+p<- 0.5
+Sn <- unlist(lapply(n_list, function(n){random_path(p,k,n)[n]}))
+plot(n_list,Sn,type ='l', col = 'blue',lty =5, main = 'p = 0.5')
+lines(n_list, rep(0,length(n_list)),col = 'red',)
+lines(n_list, rep(n,length(n_list)),col = 'green',ylim = c(-100,100))
+
+
+p<- 0.7
+Sn <- unlist(lapply(n_list, function(n){random_path(p,k,n)[n]}))
+plot(n_list,Sn,type ='l', col = 'blue',lty =5, main = 'p = 0.7')
+lines(n_list, rep(0,length(n_list)),col = 'red',)
+lines(n_list, rep(n,length(n_list)),col = 'green',ylim = c(-100,100))
+
+```
+
+
+
+### Distribution of well-known random variables:
+Discrete examples:
+
+```{r discrete}
+
+p <- 0.5
+
+
+bernoulli_rv <- replicate(trials, sample(c(0,1), 1, prob = c(p,1-p)))
+
+binom_rv <- replicate(trials, rbinom(1,10,0.5))
+
+
+geometric_rv = replicate(trials, rgeom(100,p))
+
+poisson_rv = replicate(trials, rpois(100,0.5))
+
+par(mfrow = c(2,2))
+
+hist(bernoulli_rv, col = randomColor())
+hist(binom_rv, col = randomColor())
+hist(geometric_rv, col = randomColor())
+hist(poisson_rv, col = randomColor())
+```
+
+
+
+Continuous examples:
+
+
+
+```{r continuous}
+
+p <- 0.5
+
+a = 0
+b = 10
+
+uniform_rv <- replicate(trials, runif(1, a, b))
+
+exp_rv <- replicate(trials, rexp(1,0.3))
+
+normal_rv = replicate(trials, rnorm(1,0,1))
+
+gamma_rv = replicate(trials, rgamma(1,2,1))
+
+par(mfrow = c(2,2))
+
+hist(uniform_rv, col = randomColor(),30)
+hist(exp_rv, col = randomColor(),30)
+hist(normal_rv, col = randomColor(),30)
+hist(gamma_rv, col = randomColor(),30)
+```

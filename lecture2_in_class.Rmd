@@ -1,0 +1,171 @@
+---
+title: "Stochastic Processes"
+subtitle: "Supplemental code for lecture 2, U20 Math 585" 
+author: "Sami Cheong"
+date: "9/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(markovchain)
+library(diagram)
+library(randomcoloR)
+
+```
+
+### Variance simulation of compound random variable:
+
+In the insurance company example, we are interested in learning the probability of a random variable that is consists of a two-stage components, i.e.
+
+\[X \sim Poisson(Y), \text{ and }Y \sim gamma(\lambda)\]
+
+From the exercise, we were able to derive that
+
+\[P(X=n)  = \frac{n+1}{2^n}\]
+
+How do we derive the variance in this case? 
+
+\[Var(X) = E(X^2) - (E(X))^2 =\sum_{k = 1}^{\infty} k^2 P(X=k) - (\sum_{k = 1}^{\infty} k P(X=k))^2  \]
+
+As we can see, this is not exactly the simplist calculation. However, we can also simulate the result numerically by making use of the random variable generation functions in R. In particular, the `rgamma()` and `rpois()` functions, which generate random variables with Gamma and Poision distribution respectively.
+
+```{r}
+
+# Parameter assumption of mean rate of accidents
+l <- seq(0.1,1000,0.1)
+
+gamma_func <- l*exp(-l)
+
+
+plot(l,gamma_func, type = 'l')
+
+
+# sample observation of Y 
+
+Y <- sample(x=l,size=1,prob=gamma_func)
+
+# generate a random sample of X:
+
+X <- rpois(1,Y)
+
+print(Y)
+print(X)
+
+
+```
+
+
+From the distribution above we can calculate the following:
+
+- what is the probability that $X = k$?
+- what is the mean and variance of the accident rates?
+
+
+
+
+```{r}
+
+# put this together as a function
+
+simulate_lambda <- function(){
+        
+        l <- seq(0.1,1000,0.1)
+
+        gamma_func <- l*exp(-l)
+        
+        Y <- sample(x=l,size=1,prob=gamma_func)
+
+        # generate a random sample of X:
+
+        X <- rpois(1,Y)
+        
+        return(X)
+}
+
+n_trials <- 100
+
+X_list <- replicate(n = n_trials, simulate_lambda())
+
+
+k <- 5
+
+mean_simulate <- mean(X_list)
+
+var_simulate <- var(X_list)
+
+p_simulate <- sum(X_list==k)/n_trials
+
+
+p_theoretical <- (k+1)/(2^(k+1))
+
+print(p_theoretical)
+
+print(paste('simulated mean: ', mean_simulate))
+
+print(paste('simulated var: ', var_simulate))
+
+print(paste('simulated probability: ', p_simulate))
+
+print(paste('theoretical probability: ', p_theoretical))
+```
+
+
+### Visualizing discrete-time Markov chains using the `markovchain` package
+
+
+
+In this example, we'll look at how to visualize the graphical representation of a Markov chain (i.e. in the form of a *weighted directed graph*). Fortunately, there is a package `markovchain` written specifically to handle these kind of tasks, limited to discrete time Markov chain (DTMC). Let's take a look at a simple example here:
+
+```{r, mc1}
+
+# define a transition matrix (row sum needs to be 1)
+mc <- matrix(c(0.65,0.25,0.1,
+               .25,0.25,.5,
+               .35,.25,0.4),nrow = 3, byrow = TRUE)
+# define state names
+stateNames <- c("A","B","C")
+
+# populate column and row names
+row.names(mc) <- stateNames; 
+
+colnames(mc) <- stateNames
+
+# visualize the transition matrix using plotmat (a function from the package 'diagram')
+plotmat(mc,pos = c(1,2), 
+        lwd = 1, box.lwd = 2, 
+        cex.txt = 0.8, 
+        box.size = 0.1, 
+        box.type = "circle", 
+        box.prop = 0.5,
+        box.col = c("light blue","light green","yellow"),
+        arr.length=.1,
+        arr.width=.1,
+        self.cex = .6,
+        self.shifty = -.01,
+        self.shiftx = .14,
+        main = "Markov Chain Example")
+
+```
+
+
+### n-step transition matrix:
+
+```{r, n_step}
+# where we are at the initial state:
+s0<-c(1,0,0)
+# how many steps to take:
+steps <- 10
+# sovle for sn:
+sn <-s0*mc^steps #using power operator
+
+sn
+
+
+```
+
+
+
+Other examples:
+
+

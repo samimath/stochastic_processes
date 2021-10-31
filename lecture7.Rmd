@@ -1,0 +1,42 @@
+---
+title: "Stochastic Processes"
+author: "Sami Cheong"
+date: "10/28/2020"
+output: html_document
+---
+
+## Example of a counting process
+Suppose $T_k, k =0,1,2,...$  are i.i.d. exponential random variables, and we observe:
+\[T_1 =2, T_2 = 1, T_3 = 1/2, T_4 =3, T_5 = 4\]
+
+Graph the counting process $N(t) for which these are the interarrival times for $0\leq t\leq 10.
+
+```{r}
+
+
+#assign inter-arrival time
+t_list<-c(2,1,0.5,3,4)
+
+# set number of arrivals
+n<-length(t_list)
+
+# initiate total wait time 
+s_list <-numeric(n)
+
+# assign cumulative wait time for each event:
+for (i in 1:n){
+  
+  s_list[i]<- sum(t_list[1:i])
+  print(s_list)
+}
+
+# plot function:
+plot(stepfun(s_list[1:(n)],0:(n)), 
+     do.points = TRUE,
+     pch = 16,
+     col.points = "red",
+     verticals = FALSE,
+     main = 'Realization of a Poisson process',
+     xlab = 'Time of arrival',
+     ylab = 'Number of arrivals')
+```

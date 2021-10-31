@@ -1,0 +1,210 @@
+---
+title: "Stochastic Processes"
+subtitle: "supplemental code for lecture 10"
+author: "Sami Cheong"
+date: "11/18/2020"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(expm)
+library(randomcoloR)
+
+```
+
+## Simulation of continuous-time Markov chain
+
+### Service station example
+
+We define the following elements in order to generate a CTMC:
+$\tilde{P}$ : Embedded DTMC 
+
+$q$ : Exponential rates for holding time at each states
+
+$Q$ : Infinitesimal generator, created from the transition rates
+
+```{r service_station}
+## Embedded Markov chain 
+P_tilde <- rbind(c(0,1,0,0,0),
+                 c(4/9,0,5/9,0,0),
+                 c(0,4/9,0,5/9,0),
+                 c(0,0,4/9,0,5/9),
+                 c(0,0,0,1,0))
+
+
+q_vec <- c(1/4,9/20,9/20,9/20,1/5)
+
+
+Q <- rbind(c(-1/4,1/4,0,0,0),
+          c(1/5,-9/20,1/4,0,0),
+          c(0,1/5,-9/20,1/4,0),
+          c(0,0,1/5,-9/20,1/4),
+          c(0,0,0,1/5,-1/5))
+
+
+
+
+Q <-matrix(Q,nrow = 5,ncol = 5,byrow = FALSE)
+
+```
+
+
+Here we define a function to simulate the states and transition times based on the information given:
+
+
+```{r ctmc}
+
+ctmc.sim<- function(state0,P,q, Tend, plotflag = FALSE){
+  # Modified from https://rdrr.io/cran/spuRs/src/R/CMCSimulation.R
+  # initialize output
+  output <-list()
+  # set number of states (0,1,2,...n)
+  n <- nrow(Q) - 1
+  # initialize list of states with input state0
+  statehist <- c(state0)
+  # initialize list of time stamps with 0
+  timehist <- c(0)
+  # initialize time step
+  time <- 0
+  # initialize current state with input state0
+  currentstate <- state0
+  # counter
+  jump <- 2
+  
+  while (time < Tend){
+    # create accumulated count of holding time
+    time <- time + rexp(1, q[currentstate+1])
+    # keep track of number of times a state changes
+    timehist[jump] <- time
+    # sample current state from embedded DTMC matrix
+    currentstate <- sample(0:n, 1, prob=P[currentstate+1,])
+    
+    statehist[jump] <- currentstate
+    
+    jump <- jump + 1
+  }
+  
+  if (plotflag) {
+    plot(timehist, statehist, type="s", xlab="Time", ylab="State", 
+         ylim=c(0,n), xlim=c(0,Tend), yaxt="n")
+    points(timehist, statehist,col=randomColor(),lwd = 2)
+    axis(2, at=0:n)
+  }
+  output$statehist <-statehist
+  output$timehist <-timehist
+  return(output) 
+}
+
+
+
+```
+
+Let's take a look at what a realization look like in the first two hours ($[0,120]$)
+
+```{r simulation, fig.width=8,fig.align='center'}
+set.seed(692)
+
+ctmc_output2<-ctmc.sim(state0 = 0,P = P_tilde,q = q_vec,Tend = 120,plotflag = TRUE)
+
+```
+
+
+
+### The infinitesimal generator
+
+Given the infinitesimal generator matrix $Q$, we can express the transition function $P(t)$ as $P(t) = \exp(Qt),$ which is a matrix exponential.
+
+On the other hand, a matrix exponential term can be approximated by the binomial expansion applied to the matrix as well:
+
+\[e^{Q} = I + Q + \frac{Q^2}{2} + \frac{Q^3}{3!} + \cdots\]
+
+
+In this example, we can compare the difference between the *exact* value of $e^Q$ versus an approximation using a finite number of terms
+
+```{r infinite}
+
+matrix_approx<- function(Q,N){
+  
+  I <- diag(nrow(Q))
+  P<- list()
+  PM <-I
+  
+  for(i in 1:N){
+    PM <-PM+(Q%^%i)/factorial(i)
+  }
+  
+  return(PM)
+  
+}
+
+```
+
+Let's generate an approximated $e^Q$ with 10 terms and compare that using the package `expm`
+
+```{r compare}
+
+N <-10
+diff_norm <-numeric(N)
+
+for(i in 1:N){
+  Pt.approx <- matrix_approx(Q,i)
+
+  Pt.exact <- expm::expm(Q)
+
+  D <-round(Pt.approx-Pt.exact,3)
+
+  diff_norm[i]<-norm(D,'2')
+}
+
+
+
+plot(1:N, diff_norm,
+     type ='b',
+     xlab = 'approx. terms', 
+     ylab = 'norm of matrix difference',
+     main = 'Comparing differences of exp(Q)\n generated from exact form vs binomial expansion')
+
+```
+
+
+### Numerically compute the limiting distribution for $P(t)$
+
+The limiting distribution of a CTMC is similar to its discrete counterpart, where it represents the long-term frequency of how often a state is visited. Notice that regardless of initial state, the transition function has the same value for each row. 
+
+
+```{r limit}
+
+Pt.limit <-function(t,Q,labels = NULL){
+  
+  n<-nrow(Q)
+  
+  if (is.null(labels)){
+    
+    labels <-c(0:(n-1))
+    
+  }
+  
+  out <- data.frame(expm::expm(t*Q),row.names = labels)
+  
+  colnames(out) <- labels
+  
+  return(round(out,3))
+  
+}
+
+
+par(mfrow=c(2,3))
+t<-c(1,5,20,50,70,100)
+for(i in 1:length(t)){
+  Pt <-Pt.limit(t[i],Q)
+  barplot(height = matrix(Pt[1,],nrow = 1,ncol = 5),
+          col = randomColor(),
+          names.arg=c("0", "1", "2","3","4"),
+          main = paste('P(t) with t =',t[i]))
+
+
+}
+
+
+
+```

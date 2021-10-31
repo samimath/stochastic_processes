@@ -1,0 +1,107 @@
+---
+title: "Stochastic Processes"
+subtitle: "supplemental code for lecture 12"
+author: "Sami Cheong"
+date: "12/9/2020"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(expm)
+library(randomcoloR)
+library(sde)
+```
+
+
+### Simulation example for logistic SDE
+
+The logistic growth moodel describe a population whose growth rate, ($r$), is regulated by a limit, known as carrying-capacity ($K$). Let $P(t)$ be the population of a community at tim e$t$. The deterministric differential equation representing this growth pattern is defined as 
+
+\[P'(t) = rP(t)(1-\frac{P(t)}{K})\]
+
+
+The solution of the above ODE is:
+
+\[P(t) = \frac{KP_0}{P_0 + (K-P_0)e^{-rt}}\]
+
+where $r, K >0$ and $P_0 = P(0)$ is the initial distributiion of the population.
+
+Its stochastic counterpart is defined similarly, but with the addition of a stochastic term that addresses the volatility of the growth rate. In this case, the SDE is defined (via differential form) as:
+
+\[dP_t =rP_t(1-\frac{P_t}{K}) + \sigma P_tdB_t \]
+
+The solution of the SDE can be simulated using the `sde` R package. The key in here is to be able to define the coefficients for  `drift`, which characterizes the mean of the process, and `diffusion`, which represents its variance. In this case, the `drift` is the growth term defined by $rP_t(1-\frac{P_t}{K})$,  and the `diffusion` is the noise term defined by $\sigma P_t dB_t$
+
+Below is a sample simulation that compares different initial populatoin values and noise level.
+
+
+```{r}
+
+# Logistic SDE
+# dXt = r*Xt*(1-Xt/K)*dt + sigma*(Xt)*dBt
+
+# define a function that plots the solution of the SDE against its deterministic counterpart 
+
+logistic_sim <- function(r,sigma,P0,K,d,s,hue){
+output <-list()
+t0 <- 0
+tend <- 300
+nsteps <- 1000
+time_range <- seq(from = t0, to = tend, length.out = nsteps)
+Pt <-(K*P0)/(P0+(K-P0)*exp(-r*time_range))
+
+sde_logistic <- sde.sim(X0=P0,
+                        drift=d, 
+                        sigma=s,
+                        sigma.x = 0,
+                        t0=t0,
+                        T=tend,
+                        N=nsteps) 
+
+plot(sde_logistic,
+     main=paste("Simulation of Logistic SDE: \n P0 = ", P0, "  r = ",  r, "sigma = ", sigma),
+     lwd = 2, col=randomColor(hue = hue))
+
+abline(h=K,col='red')
+lines(time_range,Pt,col='blue',lwd=1.5)
+
+  
+}
+
+
+
+# define the parameters needed for the sde simulation
+
+par(mfrow = c(2,2))
+
+for (P0 in c(10,200,300,1000)){
+  r <- 0.06
+  K <- 300  
+  sigma <- 0.1
+  d <- expression(0.06*x*(1-(x/300)) ) 
+  s <- expression( 0.1*x ) 
+
+  logistic_sim(r,sigma,P0,K,d,s,'green')
+
+  
+}
+
+
+par(mfrow = c(2,2))
+
+for (P0 in c(10,200,300,1000)){
+  r <- 0.06
+  K <- 300  
+  sigma <- 0.02
+  d <- expression(0.06*x*(1-(x/300)) ) 
+  s <- expression( 0.02*x ) 
+
+  logistic_sim(r,sigma,P0,K,d,s,'purple')
+
+  
+}
+
+
+
+
+```

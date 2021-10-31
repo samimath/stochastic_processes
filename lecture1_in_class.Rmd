@@ -1,0 +1,169 @@
+---
+title: "Stochastic Process"
+subtitle: "Supplemental notes for lecture 1, U20 Math 585" 
+author: "Sami Cheong"
+date: "9/8/2020"
+output: html_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(randomcoloR)
+```
+
+## Comparing between deterministic and stochastic modeling - simple growth modeling 
+
+Consider the modeling of the size of a population at time $t$, let's call this quantity $x(t),$ and suppose we have the following assumptions:
+
+- there are no deaths in the population
+- there are no interactions between individuals
+- each individual has the same birth rate $b$
+- at time $t = 0,$ the population is $a > 0$
+
+### Deterministic formulation:
+
+We can model $x(t)$ by modeling it's rate of change, as a function of itself:
+
+$\frac{dx}{dt} = bx,x_0 = x(0) = a$ 
+
+$\int dx(t) = \int bx(t) dt$
+
+The only function that satisfy the above relation is if $x(t) = e^{bt}.$ Therefore:
+
+$x = a e^{bt},$ where $a > 0 $ = initial population, $x(0)$, and $b > 0$ = birth rate
+
+Below is a visualization of the population over time with some assumption for $a$ and $b$: 
+
+```{r det_model}
+
+
+
+
+```
+
+
+### Stochastic formulation:
+
+In the stochastic case, we are interested in the _*Probability*_ that our population at time $t$ is at a some quantity. Mathematically, that is defined as \[p_n(t) = \mathbb{P}(x(t)=n).\] 
+
+THis means that, instead of modeling $\frac{dx}{dt}$, the rate of change of the population, we model the rate of change of the probability, $\frac{dp_n(t)}{dt},$ and our goal here is to solve for $p_n(t)$.
+
+One approach is the assumption that the population equations $n$ at time $t + \Delta t$ is a one of these two events:
+
+- at time $t$ the population size was $n - 1$ and there was a birth
+- at time $t$ the population size was $n$ and there was no birth
+
+which can be formulated as :
+
+
+\[
+p_n(t+\Delta t) = \underbrace{p_{n-1}(t)}_{\text{prob. that size} = n-1}\overbrace{b(n-1)\Delta t}^{\text{new birth}} + \underbrace{p_n(t)}_{\text{prob. that size = n}}\overbrace{(1 - b n \Delta t)}^{\text{ no new birth}}
+\]
+
+subtracting $p_n(t)$ from both side,  divide by $\Delta t$ and letting $\Delta t \to 0,$ we get the following differential equation:
+
+
+\[
+\frac{p_n(t)}{dt} = b(n-1)p_{n-1}(t) - bnp_n(t)
+\]
+
+where $n = 1, 2, \dots$. It turns out, at each fixed time $t$, $p_n(t)$ follows the negative binomial distribution with the following parameters:
+
+
+\[
+p_n(t) = {n-1 \choose {a-1}} e^{-abt} (1=e^{-bt})^{n-a}, n = a, a+1, a+2, \dots\]
+
+
+
+Now, to simulate a sample path based on the above assumption, we need to know the distribution of the time between successive birth events, or its _interenvet_ time. It turns out in the case of a simple birth process (Stochastic counterpart of exponential growht model), the interevent time is _exponentially distributed_ with rate $bn.$ In other words, if $T$ represents the time it takes to go from one birth event to next, then $T$ is a random variable with a distribution that satisfies:\[\mathbb{P}(T>t) = \exp(-bnt), t > 0\]
+
+
+```{r stoch_mode}
+
+# define negative binomial distribution with shift a:
+
+
+
+stoch_time <- function(n, b){
+  st <- rep(0,length(n))
+  
+  for (i in 1: (length(n)-1)){
+    
+    st[i+1] <- st[i] - log(runif(1))/(b*n[i])
+  }
+  return(st)
+}
+
+
+
+
+
+```
+
+
+
+
+### Example 2: Random Walk
+
+- Suppose you have some change (`$k`) and you’d like to see if you could get to `$n` by betting with a friend on a coin toss.
+
+- Each time you flip a coin dictates whether or not you’re gain $1, or lose $1.
+ 
+Let $X_i, i = 1,2, 3,...$ be such an event. Note that $\{𝑋_𝑖\}_{i=1}^\infty$  is a sequence of i.i.d. random variables and 
+
+- $𝑋_𝑖= +1$  with probability p
+- $𝑋_𝑖=−1$  with probability q = 1-p
+
+Now suppose $𝑆_𝑛=𝑋_1+𝑋_2+⋯+𝑋_𝑛$ is the amount of dollars you have left after n turns. You will not stop until you either get $n or lost all your change.
+
+*What is $\mathbb{P}(S_n = 0)$?*
+
+
+Let's define some functions to help us find the answer by simulation.
+
+```{r gamble}
+
+
+
+
+```
+
+
+Now let's give this a try. Suppose we have a budget of k = $10, and we'd like to play this game 40 times (or until we lost all fortune, or until we got \$40, whichever comes first).
+
+Let's simulate this game 1000 times (i.e. assume we're robots that never gets tired of flipping coins, or losing money)
+
+```{r}
+
+# simulate probability of P(Sn = 0)
+
+# Estimate of probability that gambler is ruined
+# For p = 0.5, exact probability is (n-k)/n
+
+
+# simulate sample paths of random walks after n steps:
+
+
+```
+
+
+
+Let's try to simulate $S_n$ as a function of n:
+
+```{r Sn}
+
+
+# simulate gambler's sum as a function of n:
+
+
+```
+
+
+
+
+
+### Distribution of well-known random variables:
+Discrete examples:
+
+Continuous examples:

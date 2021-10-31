@@ -1,0 +1,143 @@
+---
+title: "Stochastic Processes"
+author: "Sami Cheong"
+date: "11/4/2020"
+output: html_document
+---
+
+## Example of a spatial Poisson process 
+
+```{r,message=FALSE,warning=FALSE}
+
+
+sp_sim <-function(lambda,a_x, a_y){
+  ## INPUT:
+  # lambda : intensity of arrival
+  # a_x = width of the rectangle (x-dim)
+  # a_y = length of the rectange (y-dim)
+  ## OUTPUT:
+  # process$x <- x coordinates of the spatial process
+  # process$y <- y coordinates of the spatial process
+  # process$n <- number of points generated for the spatial process
+  
+  # define area of rectangle
+  A <- a_x*a_y
+  # initiate output with empty list 
+  process <-list()
+  
+  # simulate number of events with rate lambda*area
+  N <-rpois(1,lambda*A)
+  # simulate uniformly distributed points (x-dim)
+  x <-runif(N,min = 0,max = a_x)
+  # simulate uniformly distributed points (y-dim)
+  y <-runif(N,min = 0,max = a_y)
+  
+  process$x <-x
+  process$y <-y
+  process$n <-N
+  
+  
+  return(process)
+}
+
+
+
+P <-sp_sim(lambda = 10,3,5)
+plot(P, main = 'A realization of a Spatial Poisson process \n with rate 10 an on 3-by-5 region', ylab ='y', xlab = 'x')
+
+```
+
+
+Alternatively, we can also use the `spatstat` package to simulate a spatial Poisson process, below is an example on a unit square:
+
+```{r,message=FALSE}
+
+
+require(spatstat)
+
+
+
+```
+
+### Determining if a spatial point process is completely random
+
+
+```{r}
+# simulate a spatial poisson process with rate lambda = 100
+X <- spatstat::rpoispp(100)
+
+# plot X
+plot(X, main = 'spatial poisson process with lambda = 100')
+
+# plot Ripley's K function for X with edge correction to fix bias
+K_X <-Kest(X,correction = 'best')
+plot(K_X)
+
+```
+
+### Deteremine the expected number of points of multiple type 
+
+```{r,message=FALSE}
+
+Kcross_hamster<- Kcross(hamster, "dividing", "pyknotic",correction = 'best') 
+plot(Kcross_hamster)
+
+```
+
+
+
+### Example of a Non-homogenous Poisson process
+
+Consider the intensity function that represent the popular times of a restaurant
+
+```{r,message=FALSE}
+lambda_t<-function(time_int){
+  l <-numeric(length(time_int))
+  i<-1
+  for(t in time_int){
+    
+    if(t>=0&t<=2){
+      
+      l[i] <- 10+30*t
+      
+    }
+    
+    if(t>2 & t<4){
+      
+      l[i] <-70
+    }
+    
+    if(t>=4&t<=6){
+      l[i]<-70-30*(t-4)
+      
+    }
+    
+    if(t>6&t<=8){
+      l[i]<-10+30*(t-6)
+    }
+   
+    if(t>8 & t <=10){
+      l[i]<-70
+    }
+    
+    if(t>10&t<=12){
+      l[i]<-70-30*(t-10)
+    }
+    i<-i+1
+  }
+   return(l)
+}
+time_int <- seq(0,12,0.1)
+
+plot(time_int,lambda_t(time_int),type = 'l',ylab = 'customers per hour', xlab='huors since opening',main = 'Example of lambda(t)' )
+
+# integrate intensity function betweeen 3- 5
+lambda_rate <-integrate(lambda_t,3,5)
+# probability P(N_t > 100)
+k<-100
+1-sum(dpois(0:(k-1),lambda_rate$value))
+
+
+```
+
+

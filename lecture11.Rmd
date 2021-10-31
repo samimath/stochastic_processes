@@ -1,0 +1,125 @@
+---
+title: "Stochastic Processes"
+subtitle: "supplemental code for lecture 11"
+author: "Sami Cheong"
+date: "12/2/2020"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(expm)
+library(randomcoloR)
+
+```
+
+## Simulation of a standard Brownian motion 
+
+### What does the density function look like as $t$ increases?
+
+```{r}
+
+
+density_collection <- sapply(seq(from = 0.5,to =5,length.out = 20), function(x){dnorm(seq(from = -4,to =4,length.out = 500),0,x)})
+
+plot(seq(-4,4,length=500),density_collection[,1],type='l',
+     col=randomColor(hue = 'red'),
+     ylim=c(0,1),
+     xlab = 'x',
+     ylab = 'f(x,t)')
+for(j in 2:dim(density_collection)[2]){
+  lines(seq(-4,4,length=500),density_collection[,j],col=randomColor(hue = 'red'))  
+}
+
+```
+
+
+### How does that translate to a sample path?
+
+
+```{r}
+
+standard_bm <-function(t,n){
+  output <-list()
+  density<-
+  # define B_t iteratively:
+  bm <- c(0, cumsum(rnorm(n,0,sqrt(t/n))))
+  # keep track of time step:
+  steps <- seq(0,t,length=n+1)
+  # collect output
+  output$bm <-bm
+  output$steps <-steps
+  return(output)
+}
+
+
+t <- 5
+n<-2000
+trials <- 50
+bm <- standard_bm(t,n)
+plot(bm$steps, bm$bm,type ='l',col=randomColor(hue = 'green'),
+     lwd = 2, ylim = c(-6,6),xlab='t',ylab = 'B_t',
+     main = paste(trials,' realizations of a standard Brownian motion'))
+for(i in 1:trials){
+  bm_out <-standard_bm(t,n)
+  lines(bm_out$steps ,bm_out$bm ,col=randomColor(hue = 'green'),ylim = c(-6,6))
+  
+}
+
+
+
+
+
+```
+
+
+### Brownian motion with drift
+
+```{r}
+
+drift_bm <-function(t,n,mu,sigma){
+  output <-list()
+  bm <- standard_bm(t,n) 
+  bm_drift <- bm$steps*mu + sigma*bm$bm
+  output$bm_drift <-bm_drift
+  output$steps <-bm$steps
+  return(output)
+}
+
+
+
+
+t <- 5
+n<-2000
+trials <- 50
+bmd_out<- drift_bm(t,n,1,2)
+plot(bmd_out$steps, bmd_out$bm_drift,type ='l',col=randomColor(hue = 'blue'),
+     lwd = 2, ylim = c(-6,18),xlab='t',ylab = 'B_t',
+     main = paste(trials,' realizations of a Brownian motion with drift (m = 1, s =2)'))
+for(i in 1:trials){
+  bmd_out <-drift_bm(t,n,1,2)
+  lines(bmd_out$steps ,bmd_out$bm_drift ,col=randomColor(hue = 'blue'),ylim = c(-6,18))
+  
+}
+
+
+
+```
+
+
+### what does the density function look like for each time slice in this case?
+
+```{r}
+
+
+density_collection_drift <- sapply(seq(from = 0.5,to =5,length.out = 20), function(x){dnorm(seq(from = -10,to =20,length.out = 500),x,2*x)})
+
+plot(seq(-10,20,length=500),density_collection_drift [,1],type='l',
+     col=randomColor(hue = 'purple'),
+     ylim=c(0,0.5),
+     xlab = 'x',
+     ylab = 'f(x,t)')
+for(j in 2:dim(density_collection_drift )[2]){
+  lines(seq(-10,20,length=500),density_collection_drift[,j],col=randomColor(hue = 'purple'))  
+}
+
+```
